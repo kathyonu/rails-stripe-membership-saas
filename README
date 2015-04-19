@@ -7,7 +7,7 @@ https://github.com/railsapps/rails-stripe-membership-saas
 
 You can use this project as a starting point for a Rails web application. 
 
-On 20150418, our fork is running on Ruby 2.2.2, on Rails 4.2.1, uses 
+On 20150419, our fork is running on Ruby 2.2.2, on Rails 4.2.1, uses 
 Devise for user management and authentication, enum for roles authorization, 
 Twitter Bootstrap for CSS styling, and Payola and Stripe.com for processing 
 of products purchased and recurring billing for subscriptions and donations. 
