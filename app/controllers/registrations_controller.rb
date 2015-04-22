@@ -73,6 +73,7 @@ class RegistrationsController < Devise::RegistrationsController
 
   def cancel_subscription
     params[:email] = current_user.email
+
     subscription = Payola::Subscription.find_by!(email: current_user.email)
     Payola::CancelSubscription.call(subscription)
   end

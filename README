@@ -1,17 +1,8 @@
 Rails Stripe Membership Saas
 ========================
 
-We recommend you follow/fork the RailsApps master at :
-
-https://github.com/railsapps/rails-stripe-membership-saas
-
-You can use this project as a starting point for a Rails web application. 
-
-On 20150419, our fork is running on Ruby 2.2.2, on Rails 4.2.1, uses 
-Devise for user management and authentication, enum for roles authorization, 
-Twitter Bootstrap for CSS styling, and Payola and Stripe.com for processing 
-of products purchased and recurring billing for subscriptions and donations. 
-You create the plans on Stripe and describe them as you wish in your app.
+You can use this project as a starting point for a Rails web application. It requires Rails 4 and uses Devise for user management and authentication, enum for roles authorization, Twitter Bootstrap for CSS styling, and Payola and Stripe.com for processing 
+of recurring billing for subscriptions.
 
 Devise
 http://github.com/plataformatec/devise
@@ -31,13 +22,16 @@ http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html
 ________________________
 
 For more information, please see the recently updated RailsApps master on GitHub:
+=======
+________________________
+
+For more information, please see the updated README file on GitHub:
+>>>>>>> upstream/master
 
 https://github.com/railsapps/rails-stripe-membership-saas
 
 ________________________
 
-h2. MIT License
+MIT License
 
-"MIT License":http://www.opensource.org/licenses/mit-license
-
-This is a fork of the original works of and Copyright ©2014-15 Daniel Kehoe
+http://www.opensource.org/licenses/mit-license
