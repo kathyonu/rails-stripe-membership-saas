@@ -26,6 +26,7 @@ end
 group :development, :test do
   gem 'factory_girl_rails'
   gem 'faker'
+  gem 'pry'
   gem 'rspec-rails'
   gem 'stripe-ruby-mock', '~> 2.1.1', :require => 'stripe_mock'
 end
@@ -34,4 +35,5 @@ group :test do
   gem 'database_cleaner'
   gem 'launchy'
   gem 'selenium-webdriver'
+  gem 'simplecov', '~> 0.10.0'
 end
