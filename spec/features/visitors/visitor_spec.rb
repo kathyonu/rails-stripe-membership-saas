@@ -1,7 +1,7 @@
 include Warden::Test::Helpers 
 Warden.test_mode!
 
-RSpec.describe 'Visitor visits and sees site entrance points' do
+describe 'Visitor visits and sees site entrance points' do
 
   before(:each) do
     visit root_path
