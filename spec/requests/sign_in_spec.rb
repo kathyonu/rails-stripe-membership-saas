@@ -47,7 +47,6 @@ feature 'User Sign in', :devise, type: :request, js: true do
     expect(current_path).to eq '/users'
     expect(page).to have_content I18n.t 'devise.sessions.signed_in'
     expect(page).to have_content 'Signed in successfully.'
-
   end
 
   # Scenario: User cannot sign in with wrong email
