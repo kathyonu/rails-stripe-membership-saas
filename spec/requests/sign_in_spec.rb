@@ -10,7 +10,6 @@ RSpec.configure do |config|
     user = FactoryGirl.create(:user)
     user.role = 'admin'
     user.save
-    visit new_user_session_path
   end
 
   config.after(:each) do
@@ -29,6 +28,7 @@ feature 'User Sign in', :devise, type: :request, js: true do
   #   When I sign in with valid credentials
   #   Then I see an invalid credentials message
   scenario 'cannot sign in if not registered' do
+    visit new_user_session_path
     expect(current_path).to eq '/users/sign_in'
     sign_in('test@example.com', :'notmypassword')
     expect(page).to have_content 'Invalid email or password.'
@@ -41,6 +41,7 @@ feature 'User Sign in', :devise, type: :request, js: true do
   #   When I sign in with valid credentials
   #   Then I see a success message
   scenario 'can sign in with valid credentials' do
+    visit new_user_session_path
     expect(current_path).to eq "/users/sign_in"
     sign_in('test@example.com', :'please123')
     expect(current_path).to eq '/users'
@@ -55,6 +56,7 @@ feature 'User Sign in', :devise, type: :request, js: true do
   #   When I sign in with a wrong email
   #   Then I see an invalid email message
   scenario 'cannot sign in with wrong email' do
+    visit new_user_session_path
     sign_in('invalid@example.com', :'please123')
     expect(page).to have_content 'Invalid email or password.'
   end
@@ -65,6 +67,7 @@ feature 'User Sign in', :devise, type: :request, js: true do
   #   When I sign in with a wrong password
   #   Then I see an invalid password message
   scenario 'cannot sign in with wrong password' do
+    visit new_user_session_path
     sign_in('test@example.com', :'invalidpass')
     expect(page).to have_content 'Invalid email or password.'
     expect(page).to have_content I18n.t 'devise.failure.not_found_in_database', authentication_keys: 'email'
