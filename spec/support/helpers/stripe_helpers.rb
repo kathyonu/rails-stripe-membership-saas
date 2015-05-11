@@ -36,8 +36,10 @@ module StripeHelpers
         cus = Stripe::Customer.create email: 'alice@example.com',
         :card => stripe_helper.generate_card_token({ number:'4242424242424242', brand: 'Visa' })
         expect { charge = Stripe::Charge.create({
-          amount: 995, currency: 'usd',
-          customer: cus, card: cus.sources.first,
+          amount: 900,
+          currency: 'usd',
+          customer: cus,
+          card: cus.sources.first,
           description: 'hello'
         })
       }.to raise_error Stripe::CardError

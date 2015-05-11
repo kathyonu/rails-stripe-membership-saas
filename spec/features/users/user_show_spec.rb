@@ -28,9 +28,9 @@ feature 'User profile page', :devise do
   #   When I visit another user's profile
   #   Then I see an 'access denied' message
   scenario "user cannot see another user's profile" do
-    me = FactoryGirl.create(:user)
+    user = FactoryGirl.create(:user)
     other = FactoryGirl.create(:user, email: 'other@example.com')
-    login_as(me, :scope => :user)
+    login_as(user, :scope => :user)
     Capybara.current_session.driver.header 'Referer', root_path
     visit user_path(other)
     expect(page).to have_content 'Access denied.'
