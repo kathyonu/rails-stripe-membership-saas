@@ -41,7 +41,7 @@ class RegistrationsController < Devise::RegistrationsController
     unless plan == current_user.plan
       role = User.roles[plan.stripe_id]
       if current_user.update_attributes!(plan: plan, role: role)
-        subscription = Payola::Subscription.find_by!(email: current_user.email)
+        subscription = Payola::Subscription.find_by!(owner_id: current_user.id) 
         Payola::ChangeSubscriptionPlan.call(subscription, plan)
         redirect_to edit_user_registration_path, :notice => "Plan changed."
       else
@@ -73,8 +73,7 @@ class RegistrationsController < Devise::RegistrationsController
 
   def cancel_subscription
     params[:email] = current_user.email
-
-    subscription = Payola::Subscription.find_by!(email: current_user.email)
+    subscription = Payola::Subscription.find_by!(owner_id: current_user.id, state: 'active')
     Payola::CancelSubscription.call(subscription)
   end
 
