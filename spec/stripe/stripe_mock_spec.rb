@@ -1,3 +1,5 @@
+require 'stripe_mock'
+
 describe StripeMock do
   it "overrides stripe's request method" do
     StripeMock.start
@@ -18,15 +20,15 @@ describe StripeMock do
     StripeMock.stop
     StripeMock.start
     expect(StripeMock.instance.customers[:x]).to be_nil
-    expect(StripeMock.instance.customers.keys.length).to eq(0)
+    expect(StripeMock.instance.customers.keys.length).to eq 0
     StripeMock.stop
   end
 
   it "throws an error when trying to prepare an error before starting" do
-    expect { StripeMock.prepare_error(StandardError.new) }.to raise_error {|e|
+    expect { StripeMock.prepare_error(StandardError.new) }.to raise_error { |e|
     expect(e).to be_a(StripeMock::UnstartedStateError)
     }
-    expect { StripeMock.prepare_card_error(:card_declined) }.to raise_error {|e|
+    expect { StripeMock.prepare_card_error(:card_declined) }.to raise_error { |e|
     expect(e).to be_a(StripeMock::UnstartedStateError)
     }
   end
@@ -47,6 +49,7 @@ describe StripeMock do
       expect(StripeMock.state).to eq 'live'
       expect(StripeMock.start).to eq false
       expect(StripeMock.start_client).to eq false
+      StripeMock.stop # 20150611 addition so next test will pass
     end
 
     it "can be undone" do

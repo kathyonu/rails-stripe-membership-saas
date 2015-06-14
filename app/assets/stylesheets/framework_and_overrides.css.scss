@@ -68,10 +68,14 @@ section {
 .authform fieldset {
   @extend .well;
 }
+
 #error_explanation:not(:empty) {
   @extend .alert;
   @extend .alert-danger;
+  font-size: 12px;
+  padding: 2px;
 }
+
 #error_explanation h2 {
   font-size: 16px;
 }

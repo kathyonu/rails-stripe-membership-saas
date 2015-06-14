@@ -34,5 +34,4 @@ RSpec.describe 'ProductsController' do
       expect(page.response_headers['Content-Type']).to have_content 'application/pdf'
     end
   end
-
 end

@@ -16,6 +16,8 @@ gem 'bootstrap-sass'
 gem 'devise'
 gem 'gibbon'
 gem 'payola-payments'
+gem 'stripe'
+gem 'stripe_event'
 gem 'sucker_punch'
 group :development do
   gem 'better_errors'
@@ -26,7 +28,6 @@ end
 group :development, :test do
   gem 'factory_girl_rails'
   gem 'faker'
-  gem 'pry'
   gem 'rspec-rails'
   gem 'stripe-ruby-mock', '~> 2.1.1', :require => 'stripe_mock'
   gem 'thin'
@@ -34,7 +35,9 @@ end
 group :test do
   gem 'capybara'
   gem 'database_cleaner'
+  gem 'email_spec'
   gem 'launchy'
+  gem 'pry'
   gem 'selenium-webdriver'
-  gem 'simplecov', '~> 0.10.0'
+  gem 'simplecov', require: false
 end
