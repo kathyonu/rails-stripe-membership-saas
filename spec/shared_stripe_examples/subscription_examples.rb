@@ -4,29 +4,35 @@ require 'stripe_mock/server'
 
 # Note of 20150613 : I cannot yet vouchesafe these tests on the rails-stripe-membership-saas app
 # these tests are a copy and paste from a pure stripe implentation, nothing between stripe and the app
+include Warden::Test::Helpers
+Warden.test_mode!
+
 # shared_examples
 
+RSpec.configure do
+  def card
+    card = stripe_helper.generate_card_token
+  end
+
+  before(:each) do
+    @attr = {
+      name: "Test User",
+      email: "test@example.com",
+      password: "changeme",
+      password_confirmation: "changeme"
+    }
+  end
+end
+
 RSpec.describe "Customer Subscriptions" do
-    let(:stripe_helper) { StripeMock.create_test_helper }
 
-    before { StripeMock.start_client }
-    after { StripeMock.stop_client }
-        
-    context "creating a new subscription" do
+  let(:stripe_helper) { StripeMock.create_test_helper }
 
-    def card
-      card = stripe_helper.generate_card_token
-    end
+  before { StripeMock.start_client }
+  after { StripeMock.stop_client }
 
-    before(:each) do
-      @attr = {
-        name: "Test User",
-        email: "test@example.com",
-        password: "changeme",
-        password_confirmation: "changeme"
-      }
-    end
-    
+  context "creating a new subscription" do
+
     it "adds a new subscription to customer with none" do
       plan = stripe_helper.create_plan(id: 'five', name: 'Five', amount: 500)
       customer = Stripe::Customer.create(card: stripe_helper.generate_card_token)
@@ -52,59 +58,61 @@ RSpec.describe "Customer Subscriptions" do
 # these tests commented out are not yet upgraded regarding cards to source, 
 # and the default_card being changed to default_source
 
-    it "adds additional subscription to customer with existing subscription" do
-      silver = stripe_helper.create_plan(id: 'silver')
-     gold = stripe_helper.create_plan(id: 'gold')
-    customer = Stripe::Customer.create(id: 'test_customer_sub', card: card, plan: 'gold')
-    sub = customer.subscriptions.create({ :plan => 'silver' })
-    expect(sub.object).to eq('subscription')
-    expect(sub.plan.to_hash).to eq(silver.to_hash)
-    customer = Stripe::Customer.retrieve('test_customer_sub')
-    expect(customer.subscriptions.data).to_not be_empty
-    expect(customer.subscriptions.count).to eq(2)
-    expect(customer.subscriptions.data.length).to eq(2)
-    expect(customer.subscriptions.data.last.plan.to_hash).to eq(gold.to_hash)
-    expect(customer.subscriptions.data.last.customer).to eq(customer.id)
-    expect(customer.subscriptions.data.first.id).to eq(sub.id)
-     expect(customer.subscriptions.data.first.plan.to_hash).to eq(silver.to_hash)
-      expect(customer.subscriptions.data.first.customer).to eq(customer.id)
-    end
+      it "adds additional subscription to customer with existing subscription" do
+        silver = stripe_helper.create_plan(id: 'silver')
+        gold = stripe_helper.create_plan(id: 'gold')
+        customer = Stripe::Customer.create(id: 'test_customer_sub', card: card, plan: 'gold')
+        sub = customer.subscriptions.create({ :plan => 'silver' })
+        expect(sub.object).to eq('subscription')
+        expect(sub.plan.to_hash).to eq(silver.to_hash)
+        customer = Stripe::Customer.retrieve('test_customer_sub')
+        expect(customer.subscriptions.data).to_not be_empty
+        expect(customer.subscriptions.count).to eq(2)
+        expect(customer.subscriptions.data.length).to eq(2)
+        expect(customer.subscriptions.data.last.plan.to_hash).to eq(gold.to_hash)
+        expect(customer.subscriptions.data.last.customer).to eq(customer.id)
+        expect(customer.subscriptions.data.first.id).to eq(sub.id)
+        expect(customer.subscriptions.data.first.plan.to_hash).to eq(silver.to_hash)
+        expect(customer.subscriptions.data.first.customer).to eq(customer.id)
+      end
 =end
 =begin
-    it "subscribes a cardless customer when specifing a card token" do
-      plan = stripe_helper.create_plan(id: 'enterprise', amount: 499)
-      customer = Stripe::Customer.create(id: 'cardless')
-      sub = customer.subscriptions.create(plan: 'enterprise', card: card)
-      customer = Stripe::Customer.retrieve('cardless')
-      expect(customer.subscriptions.data.first.id).to eq(sub.id)
-      expect(customer.subscriptions.data.first.customer).to eq(customer.id)
-      expect(customer.cards.count).to eq(1)
-      expect(customer.cards.data.length).to eq(1)
-      expect(customer.default_card).to_not be_nil
-      expect(customer.default_card).to eq customer.cards.data.first.id
-  end
+      it "subscribes a cardless customer when specifing a card token" do
+        plan = stripe_helper.create_plan(id: 'enterprise', amount: 499)
+        customer = Stripe::Customer.create(id: 'cardless')
+        sub = customer.subscriptions.create(plan: 'enterprise', card: card)
+        customer = Stripe::Customer.retrieve('cardless')
+        expect(customer.subscriptions.data.first.id).to eq(sub.id)
+        expect(customer.subscriptions.data.first.customer).to eq(customer.id)
+        expect(customer.cards.count).to eq(1)
+        expect(customer.cards.data.length).to eq(1)
+        expect(customer.default_card).to_not be_nil
+        expect(customer.default_card).to eq customer.cards.data.first.id
+      end
 =end
-    it "throws an error when plan does not exist" do
-customer = Stripe::Customer.create(id: 'cardless')
-expect { customer.subscriptions.create({ :plan => 'gazebo' }) }.to raise_error {|e|
-expect(e).to be_a Stripe::InvalidRequestError
-expect(e.http_status).to eq(404)
-expect(e.message).to_not be_nil
-}
-expect(customer.subscriptions.data).to be_empty
-expect(customer.subscriptions.count).to eq(0)
-end
-it "throws an error when subscribing a customer with no card" do
-plan = stripe_helper.create_plan(id: 'enterprise', amount: 499)
-customer = Stripe::Customer.create(id: 'cardless')
-expect { customer.subscriptions.create({ :plan => 'enterprise' }) }.to raise_error {|e|
-expect(e).to be_a Stripe::InvalidRequestError
-expect(e.http_status).to eq(400)
-expect(e.message).to_not be_nil
-}
-expect(customer.subscriptions.data).to be_empty
-expect(customer.subscriptions.count).to eq(0)
-end
+    it "throws an error when card does not exist" do
+        customer = Stripe::Customer.create(id: 'cardless')
+        expect { customer.subscriptions.create({ :plan => 'gazebo' }) }.to raise_error {|e|
+        expect(e).to be_a Stripe::InvalidRequestError
+        expect(e.http_status).to eq(404)
+        expect(e.message).to_not be_nil
+        }
+        expect(customer.subscriptions.data).to be_empty
+        expect(customer.subscriptions.count).to eq(0)
+    end
+
+    it "throws an error when subscribing a customer with no card" do
+        plan = stripe_helper.create_plan(id: 'enterprise', amount: 499)
+        customer = Stripe::Customer.create(id: 'cardless')
+        expect { customer.subscriptions.create({ :plan => 'enterprise' }) }.to raise_error {|e|
+        expect(e).to be_a Stripe::InvalidRequestError
+        expect(e.http_status).to eq(400)
+        expect(e.message).to_not be_nil
+        }
+        expect(customer.subscriptions.data).to be_empty
+        expect(customer.subscriptions.count).to eq(0)
+    end
+# end
 =begin
 it "subscribes a customer with no card to a plan with a free trial" do
 plan = stripe_helper.create_plan(id: 'trial', amount: 999, trial_period_days: 14)
@@ -389,23 +397,23 @@ end
 end
 =end
 
-context "cancelling a subscription" do
-=begin
-it "cancels a stripe customer's subscription", :live => true do
-truth = stripe_helper.create_plan(id: 'the truth')
-customer = Stripe::Customer.create(card: card, plan: "the truth")
-sub = customer.subscriptions.retrieve(customer.subscriptions.data.first.id)
-result = sub.delete
-expect(result.status).to eq('canceled')
-expect(result.cancel_at_period_end).to eq false
-expect(result.canceled_at).to_not be_nil
-expect(result.id).to eq(sub.id)
-customer = Stripe::Customer.retrieve(customer.id)
-expect(customer.subscriptions.data).to be_empty
-expect(customer.subscriptions.count).to eq(0)
-expect(customer.subscriptions.data.length).to eq(0)
-end
-=end
+    context "cancelling a subscription" do
+
+      it "cancels a stripe customer's subscription", :live => true do
+        truth = stripe_helper.create_plan(id: 'the truth')
+        customer = Stripe::Customer.create(card: card, plan: "the truth")
+        sub = customer.subscriptions.retrieve(customer.subscriptions.data.first.id)
+        result = sub.delete
+        expect(result.status).to eq('canceled')
+        expect(result.cancel_at_period_end).to eq false
+        expect(result.canceled_at).to_not be_nil
+        expect(result.id).to eq(sub.id)
+        customer = Stripe::Customer.retrieve(customer.id)
+        expect(customer.subscriptions.data).to be_empty
+        expect(customer.subscriptions.count).to eq(0)
+        expect(customer.subscriptions.data.length).to eq(0)
+      end
+
 =begin
 it "cancels a stripe customer's subscription at period end" do
 truth = stripe_helper.create_plan(id: 'the_truth')
@@ -425,23 +433,24 @@ expect(customer.subscriptions.data.first.ended_at).to be_nil
 expect(customer.subscriptions.data.first.canceled_at).to_not be_nil
 end
 =end
-it "resumes an at period end cancelled subscription" do
-truth = stripe_helper.create_plan(id: 'the_truth')
-customer = Stripe::Customer.create(id: 'test_customer_sub', card: card, plan: "the_truth")
-sub = customer.subscriptions.retrieve(customer.subscriptions.data.first.id)
-result = sub.delete(at_period_end: true)
-sub.plan = 'the_truth'
-sub.save
-customer = Stripe::Customer.retrieve('test_customer_sub')
-expect(customer.subscriptions.data).to_not be_empty
-expect(customer.subscriptions.count).to eq(1)
-expect(customer.subscriptions.data.length).to eq(1)
-expect(customer.subscriptions.data.first.status).to eq('active')
-expect(customer.subscriptions.data.first.cancel_at_period_end).to eq(false)
-expect(customer.subscriptions.data.first.ended_at).to be_nil
-expect(customer.subscriptions.data.first.canceled_at).to be_nil
-end
-end
+
+      it "resumes an at period end cancelled subscription" do
+        truth = stripe_helper.create_plan(id: 'the_truth')
+        customer = Stripe::Customer.create(id: 'test_customer_sub', card: card, plan: "the_truth")
+        sub = customer.subscriptions.retrieve(customer.subscriptions.data.first.id)
+        result = sub.delete(at_period_end: true)
+        sub.plan = 'the_truth'
+        sub.save
+        customer = Stripe::Customer.retrieve('test_customer_sub')
+        expect(customer.subscriptions.data).to_not be_empty
+        expect(customer.subscriptions.count).to eq(1)
+        expect(customer.subscriptions.data.length).to eq(1)
+        expect(customer.subscriptions.data.first.status).to eq('active')
+        expect(customer.subscriptions.data.first.cancel_at_period_end).to eq(false)
+        expect(customer.subscriptions.data.first.ended_at).to be_nil
+        expect(customer.subscriptions.data.first.canceled_at).to be_nil
+      end
+
 =begin
 it "doesn't change status of subscription when cancelling at period end" do
 trial = stripe_helper.create_plan(id: 'trial', trial_period_days: 14)
@@ -496,28 +505,28 @@ expect(list.count).to eq(0)
 expect(list.data.length).to eq(0)
 end
 =end
-end
-describe "metadata" do
-it "creates a stripe customer and subscribes them to a plan with meta data", :live => true do
-stripe_helper.create_plan(
-:amount => 500,
-:interval => 'month',
-:name => 'Sample Plan',
-:currency => 'usd',
-:id => 'Sample5',
-:statement_description => "Plan Statement"
-)
-customer = Stripe::Customer.create({
-email: 'johnny@appleseed.com',
-card: stripe_helper.generate_card_token
-})
-subscription = customer.subscriptions.create(:plan => "Sample5")
-subscription.metadata['foo'] = 'bar'
-expect(subscription.save).to be_a Stripe::Subscription
-customer = Stripe::Customer.retrieve(customer.id)
-expect(customer.email).to eq('johnny@appleseed.com')
-expect(customer.subscriptions.first.plan.id).to eq('Sample5')
-expect(customer.subscriptions.first.metadata['foo']).to eq('bar')
-end
-end
+  end
+
+  describe "metadata" do
+    it "creates a stripe customer and subscribes them to a plan with meta data", live: true do
+    stripe_helper.create_plan(
+      amount: 500,
+      interval: 'month',
+      name: 'Sample Plan',
+      currency: 'usd',
+      id: 'Sample5',
+      statement_description: "Plan Statement"
+      )
+      customer = Stripe::Customer.create({
+      email: 'johnny@appleseed.com',
+      card: stripe_helper.generate_card_token
+    })
+    subscription = customer.subscriptions.create(:plan => "Sample5")
+    subscription.metadata['foo'] = 'bar'
+    expect(subscription.save).to be_a Stripe::Subscription
+    customer = Stripe::Customer.retrieve(customer.id)
+    expect(customer.email).to eq('johnny@appleseed.com')
+    expect(customer.subscriptions.first.plan.id).to eq('Sample5')
+    expect(customer.subscriptions.first.metadata['foo']).to eq('bar')
+  end
 end

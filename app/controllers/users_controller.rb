@@ -4,6 +4,8 @@ class UsersController < ApplicationController
 
   def index
     @users = User.all
+    @userscount = @users.count
+    @users
   end
 
   def show

@@ -19,6 +19,7 @@
 db/*.sqlite3
 /db/*.sqlite3-journal
 /log/*
+/log/*.log
 /tmp/*
 
 # various artifacts
@@ -41,7 +42,6 @@ db/*.sqlite3
 /public/stylesheets/compiled
 /public/system/*
 /spec/tmp/*
-/stripe-mock-server.log
 /cache
 /capybara*
 /capybara-*.html

@@ -16,21 +16,6 @@ describe 'Charge API', live: true do
     Warden.test_reset!
   end
 
-  it "tests idempotency_key" do
-    pending 'tests the operation of the idempotency_key'
-    charge = Stripe::Charge.create({
-      amount: 900,
-      currency: 'usd',
-      source: stripe_helper.generate_card_token(card_number: 4242424242424242, exp_month: 8, exp_year: 2018),
-      description: "Charge for user@example.com",
-      }, {
-        idempotency_key: "95ea4310438306ch"
-    })
-#binding.pry
-    expect(charge.idempotency_key).to eq "95ea4310438306ch"
-   #expect(ations).to be 'written' ??
-  end
-
   it "creates a stripe charge item with a card token" do
     charge = Stripe::Charge.create({
       amount: 900,
