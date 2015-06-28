@@ -1,8 +1,5 @@
-# 20150627 : these tests need to be adjusted for the current rails-stripe-membership-saas app, 
-#  which does not track the customer id nunber from stripe.  
-# TODO the above
 require 'stripe_mock'
-require 'pry'
+
 include Warden::Test::Helpers
 Warden.test_mode!
 
@@ -29,7 +26,6 @@ describe 'Subscription API' do
     )
     @user = FactoryGirl.create(:user, email: 'cancelsub@example.com')
     customer = Stripe::Customer.retrieve(customer.id)
-#binding.pry
     @user.customer_id = customer.id
     expect(@user.customer_id).to eq customer.id
     # creating plan

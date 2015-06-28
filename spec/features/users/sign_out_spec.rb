@@ -10,11 +10,9 @@ feature 'Sign out', :devise do
 
   before(:each) do
     FactoryGirl.reload 
-    StripeMock.start
   end
 
   after(:each) do
-    StripeMock.stop
     Warden.test_reset!
   end
 
@@ -25,8 +23,11 @@ feature 'Sign out', :devise do
   scenario 'user signs out successfully' do
     user = FactoryGirl.create(:user)
     sign_in(user.email, user.password)
+    expect(page).to have_content 'Signed in successfully.'
     expect(page).to have_content I18n.t 'devise.sessions.signed_in'
+   #visit '/users/sign_out'
     click_link 'Sign out'
+    expect(page).to have_content 'Signed out successfully.'
     expect(page).to have_content I18n.t 'devise.sessions.signed_out'
   end
 end

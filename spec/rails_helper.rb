@@ -89,12 +89,11 @@ RSpec.configure do |config|
   #
   # The different available types are documented in the features, such as in
   # https://relishapp.com/rspec/rspec-rails/docs
- config.infer_spec_type_from_file_location!
+  config.infer_spec_type_from_file_location!
 
   # this RSpec method was added per Terminal response on 20140628
   # check this method next time in raise_errors, any change ? 20150611
   config.raise_errors_for_deprecations!
 
   config.include Warden::Test::Helpers
-
 end

@@ -1,6 +1,5 @@
 require 'stripe'
 require 'stripe_mock'
-require 'pry'
 
 describe User do
 
@@ -14,7 +13,9 @@ describe User do
     StripeMock.stop
     Warden.test_reset!
   end
-    
+
+  let(:stripe_helper) { StripeMock.create_test_helper }
+
   it { should respond_to(:email) }
 
   it "#email returns a string" do
@@ -134,6 +135,8 @@ end
 
 describe "expire" do
 
+  let(:stripe_helper) { StripeMock.create_test_helper }
+
   before(:each) do
     StripeMock.start
     FactoryGirl.reload
@@ -145,17 +148,57 @@ describe "expire" do
     Warden.test_reset!
   end
 
-  it "sends an email to user" do
-    pending 'requires further study'
-    @user.save!
-   #@user.expire        # fails : NoMethodError: undefined method
-   #@user.expire_email  # fails : NoMethodError: undefined method
-   #UserMailer.expire_email(@user)
+  it "sends an email to user", live: true do
+    pending 'needs work'
+    StripeMock.start
+    plan = stripe_helper.create_plan(id: 'silver', name: 'Silver', amount: 900)
+    token = stripe_helper.generate_card_token(card_number: '4242424242424242')
+    customer = Stripe::Customer.create({
+      email: 'johnny@appleseed.com',
+      source: token
+    })
+    expect(customer.subscriptions.data).to be_empty
+    expect(customer.subscriptions.count).to eq(0)
+    expect(token).to match /^test_tok/
+    subscription = customer.subscriptions.create(plan: "silver", metadata: { foo: "bar", example: "yes" })
+    subscription.metadata['foo'] = 'bar'
+    expect(subscription.object).to eq('subscription')
+    expect(subscription.plan.to_hash).to eq(plan.to_hash)
+    expect(subscription.metadata.foo).to eq( "bar" )
+    expect(subscription.metadata.example).to eq( "yes" )
+    customer = Stripe::Customer.retrieve(customer.id)
+    expect(customer.subscriptions.data).to_not be_empty
+    expect(customer.subscriptions.count).to eq(1)
+    expect(customer.subscriptions.data.length).to eq(1)
+    expect(customer.subscriptions.data.first.id).to eq(subscription.id)
+    expect(customer.subscriptions.data.first.plan.to_hash).to eq(plan.to_hash)
+    expect(customer.subscriptions.data.first.customer).to eq(customer.id)
+    expect(customer.subscriptions.data.first.metadata.foo).to eq( "bar" )
+    expect(customer.subscriptions.data.first.metadata.example).to eq( "yes" )
+    expect(customer.email).to eq('johnny@appleseed.com')
+    expect(customer.subscriptions.first.plan.id).to eq('silver')
+    expect(customer.subscriptions.first.metadata['foo']).to eq('bar')
+    @user = FactoryGirl.create(:user, email: "johnny@appleseed.com", password: 'changeme', password_confirmation: 'changeme')
+    @user.role = plan.id
+    Rails.logger.info(puts "#{@user.inspect}")
+    expect(@user.role).to eq 'silver'
+    @user.update!(email: 'emailtouser@example.com')
+    expired = UserMailer.expire_email(@user)
+    expect(expired.pretty_inspect).to match /#<Mail::Message/
+    expect(expired.pretty_inspect).to match /Multipart: true/
+    expect(expired.pretty_inspect).to match /Headers: \<From: do-not-reply\@example\.com\>/
+    expect(expired.pretty_inspect).to match /\<To: emailtouser\@example\.com\>/
+    expect(expired.pretty_inspect).to match /\<Subject: Subscription Cancelled\>/
+    expect(expired.pretty_inspect).to match /\<Mime-Version: 1\.0\>/
+    expect(expired.pretty_inspect).to match /\<Content-Type: multipart\/alternative;/
+    expect(expired.pretty_inspect).to match /boundary\=\"--\=\=\_mimepart\_/
+    expect(expired.pretty_inspect).to match /charset=UTF-8\>/
    #expect(ActionMailer::Base.deliveries.last.to).to eq @user.email # => NoMethodError: undefined method `to' for nil:NilClass
-   #expect(ActionMailer::Base.deliveries.size).to eq 1
-   #expect(ActionMailer::Base.deliveries.last).to eq([@user.email])
-   #expect(ActionMailer::Base.deliveries.last.to).to eq([@user.email])
-    expect(ActionMailer::Base.deliveries.last).to eq @user.email
+    expect(ActionMailer::Base.deliveries.size).to eq 1
+    expect(ActionMailer::Base.deliveries.last).to eq([@user.email])
+    expect(ActionMailer::Base.deliveries.last.to).to eq([@user.email])
+    expect(ActionMailer::Base.deliveries.last.to).to eq @user.email
+    StripeMock.stop
   end
 end
 
@@ -183,14 +226,17 @@ end
 describe ".update_stripe", :devise do
   context "with a non-existing user" do  
 
+    let(:stripe_helper) { StripeMock.create_test_helper }
+
     before do
       StripeMock.start
       @user = FactoryGirl.build(:user, email: 'test@example.com')
 ###   successful_stripe_response = StripeHelper::Response.new("success")
 ###   Stripe::Customer.mock(:create).and_return(successful_stripe_response)
-      card_token = StripeMock.generate_card_token(number: "4242424242424242", exp_month: 2, exp_year: 2017)
+      card_token = stripe_helper.generate_card_token(card_number: "4242424242424242", exp_month: 2, exp_year: 2017)
       @customer = Stripe::Customer.create(card: card_token)
       @user.role = "silver"
+      @user.save!
     end
 
     after do

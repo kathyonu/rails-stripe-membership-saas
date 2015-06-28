@@ -16,7 +16,9 @@ feature 'User edit', :devise do
   #   When I change my email address
   #   Then I see an account updated message
   scenario 'user changes email address' do
-    user = FactoryGirl.create(:user)
+    user = FactoryGirl.build(:user)
+    user.role = 'admin'
+    user.save!
     login_as(user, scope: :user)
     visit edit_user_registration_path(user)
     fill_in 'Email', with: 'newemail@example.com'
@@ -45,5 +47,4 @@ feature 'User edit', :devise do
     txt = I18n.t('devise.registrations.invalid')
     expect(txt).to eq "Invalid email or password."
   end
-
 end

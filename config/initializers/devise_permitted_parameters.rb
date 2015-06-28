@@ -16,4 +16,3 @@ module DevisePermittedParameters
 end
 
 DeviseController.send :include, DevisePermittedParameters
-

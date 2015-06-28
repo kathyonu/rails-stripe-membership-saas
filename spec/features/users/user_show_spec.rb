@@ -16,7 +16,9 @@ feature 'User profile page', :devise do
   #   When I visit the user profile page
   #   Then I see my own email address
   scenario 'user sees own profile' do
-    user = FactoryGirl.create(:user)
+    user = FactoryGirl.build(:user)
+    user.role = 'admin'
+    user.save!
     login_as(user, scope: :user)
     visit user_path(user)
     expect(page).to have_content 'User'
@@ -35,5 +37,4 @@ feature 'User profile page', :devise do
     visit user_path(other)
     expect(page).to have_content 'Access denied.'
   end
-
 end

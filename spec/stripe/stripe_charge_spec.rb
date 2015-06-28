@@ -20,6 +20,7 @@ describe 'Charge API', live: true do
     charge = Stripe::Charge.create({
       amount: 900,
       currency: 'usd',
+      interval: 'month',
       source: stripe_helper.generate_card_token(card_number: 4242424242424242, exp_month: 8, exp_year: 2018),
       description: "Charge for user@example.com",
       }, {
@@ -29,6 +30,7 @@ describe 'Charge API', live: true do
     expect(charge.amount).to eq 900
     expect(charge.description).to eq "Charge for user@example.com"
     expect(charge.captured).to eq true
+    expect(charge.interval).to eq 'month'
   end
 
   it "creates a stripe charge item with a customer and card id" do

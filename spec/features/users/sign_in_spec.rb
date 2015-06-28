@@ -2,6 +2,21 @@ include Features::SessionHelpers
 include Warden::Test::Helpers
 Warden.test_mode!
 
+RSpec.configure do |config|
+  config.mock_framework = :rspec
+  config.before(:all) do
+    FactoryGirl.reload 
+  end
+end
+
+RSpec.describe "mocking with RSpec", js: true do
+  it "passes when it should" do
+    user = double('user')
+    expect(user).to receive(:message)
+    user.message
+  end
+end
+    
 # Feature: Sign in
 #   As a user
 #   I want to sign in
@@ -10,11 +25,9 @@ feature 'Sign in', :devise do
 
   before(:each) do
     FactoryGirl.reload 
-    StripeMock.start
   end
 
   after(:each) do
-    StripeMock.stop
     Warden.test_reset!
   end
 
@@ -23,6 +36,7 @@ feature 'Sign in', :devise do
   #   When I sign in with valid credentials
   #   Then I see an invalid credentials message
   scenario 'user cannot sign in if not registered' do
+    user = FactoryGirl.create(:user)
     sign_in('unknown@example.com', 'please123')
     expect(page).to have_content 'Invalid email or password.'
     expect(page).to have_content I18n.t 'devise.failure.invalid', authentication_keys: 'email'
@@ -35,7 +49,9 @@ feature 'Sign in', :devise do
   #   When I sign in with valid credentials
   #   Then I see a success message
   scenario 'user can sign in with valid credentials' do
-    user = FactoryGirl.create(:user)
+    user = FactoryGirl.build(:user)
+    user.role = 'admin'
+    user.save!
     sign_in(user.email, user.password)
     expect(page).to have_content 'Signed in successfully.'
     expect(page).to have_content I18n.t 'devise.sessions.signed_in'
@@ -47,7 +63,9 @@ feature 'Sign in', :devise do
   #   When I sign in with a wrong email
   #   Then I see an invalid email message
   scenario 'user cannot sign in with wrong email' do
-    user = FactoryGirl.create(:user)
+    user = FactoryGirl.build(:user)
+    user.role = 'admin'
+    user.save
     sign_in('invalid@email.com', user.password)
     expect(page).to have_content 'Invalid email or password.'
     expect(page).to have_content I18n.t 'devise.failure.invalid', authentication_keys: 'email'

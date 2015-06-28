@@ -1,7 +1,5 @@
 class OwnerMailer < ActionMailer::Base
   default from: "do-not-reply@example.com"
- #default from: "sequencers@goodworksonearth.net"
- #default from: "example@example.com"
 
   def expire_email(owner)
     mail(to: owner.email, subject: "Subscription Cancelled")
