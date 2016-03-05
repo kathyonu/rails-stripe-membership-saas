@@ -20,6 +20,7 @@ group :development do
   gem 'quiet_assets'
   gem 'rails_layout'
   gem 'spring-commands-rspec'
+  gem 'web-console', '~> 3.0'
 end
 group :development, :test do
   gem 'byebug'
@@ -32,7 +33,6 @@ group :development, :test do
   # gem 'stripe-ruby-mock', '~> 2.2.0', require: 'stripe_mock'
   gem 'stripe-ruby-mock', git: 'https://github.com/rebelidealist/stripe-ruby-mock.git', branch: 'master', require: 'stripe_mock'
   gem 'thin', '~> 1.6.3'
-  gem 'web-console', '~> 3.0'
 end
 group :test do
   gem 'capybara'
