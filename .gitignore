@@ -79,5 +79,9 @@ pickle-email-*.html
 .env
 .powenv
 
+# tilde files are usually backup files from a text editor
+*~
+
 # StripeMock server
 /stripe-mock-server.log
+/stripe-mock-server.pid
