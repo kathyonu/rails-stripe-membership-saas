@@ -14,16 +14,15 @@ require 'stripe_mock/server'
 require 'email_spec'
 require 'sucker_punch'
 require 'thin'
-StripeMock.spawn_server # : Note, leaving uncommented to test our next live tests run : 20150611
-# Note of 20150613 : it again appears this spawn_server must be toggled, itself, for live test to run
+ARGV = [] # Reset ARGV so Dante will quit using rspec params
+StripeMock.spawn_server # this spawn_server must be toggled, itself, for live test to run
 # StripeMock.spawn_server : Note it appears this command above must be commented out when running $ rspec -t live
 
 # Reference : http://stackoverflow.com/questions/11770552/how-to-get-rails-logger-printing-to-the-console-stdout-when-running
 def log_test(message)
-    Rails.logger.info(message)
-    puts message
+  Rails.logger.info(message)
+  puts message
 end
-
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are

@@ -1,3 +1,4 @@
+require 'pry'
 class RegistrationsController < Devise::RegistrationsController
   include Payola::StatusBehavior
   before_action :cancel_subscription, only: [:destroy]
@@ -10,10 +11,14 @@ class RegistrationsController < Devise::RegistrationsController
     end
     yield resource if block_given?
     respond_with self.resource
+      # @plan = params([:plan])
+      # @plan = Plan.find_by!(id: params[:user][:plan_id].to_i)
+      # @plan = Plan.find_by!(stripe_id: params[:plan])
+      # resource.plan = @plan
   end
 
   def create
-    build_resource(sign_up_params)
+    build_resource()
     plan = Plan.find_by!(id: params[:user][:plan_id].to_i)
     resource.role = User.roles[plan.stripe_id] unless resource.admin?
     resource.save
@@ -24,7 +29,7 @@ class RegistrationsController < Devise::RegistrationsController
         sign_up(resource_name, resource)
         subscribe
       else
-        set_flash_message :notice, :"signed_up_but_#{resource.inactive_message}" if is_flashing_format?
+        set_flash_message :notice, "signed_up_but_#{resource.inactive_message}" if is_flashing_format?
         expire_data_after_sign_in!
         subscribe
       end
@@ -59,8 +64,7 @@ class RegistrationsController < Devise::RegistrationsController
   end
 
   def sign_up_params
-    params.require(:user).permit(:email,
-    :password, :password_confirmation, :plan_id)
+    params.require(:user).permit(:email, :password, :password_confirmation, :plan_id)
   end
 
   def subscribe

@@ -30,7 +30,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'rubocop', require: false
   gem 'spring'
-  # gem 'stripe-ruby-mock', '~> 2.2.0', require: 'stripe_mock'
+  # gem 'stripe-ruby-mock', '~> 2.2.2', require: 'stripe_mock'
   gem 'stripe-ruby-mock', git: 'https://github.com/rebelidealist/stripe-ruby-mock.git', branch: 'master', require: 'stripe_mock'
   gem 'thin', '~> 1.6.3'
 end
